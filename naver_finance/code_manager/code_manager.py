@@ -1,10 +1,10 @@
 import atexit
 from typing import TYPE_CHECKING, Optional, List, Union
-from urllib import parse
 from argparse import ArgumentError
 
 from naver_finance.code_manager import CodeManager
 from naver_finance.service import SyncService
+from naver_finance.utils import parse_EUC_KR
 
 if TYPE_CHECKING:
     from naver_finance.models import Stock
@@ -12,8 +12,8 @@ if TYPE_CHECKING:
 
 class __SyncCodeManager(CodeManager, SyncService):
     def code_to_name(self, code: str) -> Optional[str]:
-        response = self._client.get(f"/item/main.naver?code={code}")
-        soup = self.make_soup(response.text)
+        html = self._fetch(f"/item/main.naver?code={code}")
+        soup = self.make_soup(html)
         name = soup.select_one(".h_company > .wrap_company > h2")
 
         try:
@@ -23,11 +23,11 @@ class __SyncCodeManager(CodeManager, SyncService):
 
     def name_to_code_list(self, name: str) -> List["Stock"]:
         stocks: List["Stock"] = []
-        name = parse.quote(name, encoding="euc-kr")
+        name = parse_EUC_KR(name)
 
         def get_page_size(name: str) -> int:
-            response = self._client.get(f"/search/searchList.naver?query={name}")
-            soup = self.make_soup(response.text)
+            html = self._fetch(f"/search/searchList.naver?query={name}")
+            soup = self.make_soup(html)
             paging = soup.select_one("#content > .section_search > .paging")
 
             try:
@@ -35,15 +35,11 @@ class __SyncCodeManager(CodeManager, SyncService):
             except AttributeError:
                 return 0
 
-        def fetch(url: str):
-            response = self._client.get(url)
-            return response.text
-
         size = get_page_size(name)
         urls = [
             f"/search/searchList.naver?query={name}&page={i + 1}" for i in range(size)
         ]
-        htmls = [fetch(url) for url in urls]
+        htmls = [self._fetch(url) for url in urls]
 
         for html in htmls:
             soup = self.make_soup(html)
@@ -60,9 +56,10 @@ class __SyncCodeManager(CodeManager, SyncService):
         return stocks
 
     def get_current_price_by_code(self, code: str) -> Union[int, float]:
-        response = self._client.get(f"/item/main.naver?code={code}")
-        soup = self.make_soup(response.text)
+        html = self._fetch(f"/item/main.naver?code={code}")
+        soup = self.make_soup(html)
         price = soup.select_one("#chart_area > div.rate_info > div > p.no_today > em")
+
         try:
             return int("".join(price.text.split("\n")[1].split(",")))
         except:
