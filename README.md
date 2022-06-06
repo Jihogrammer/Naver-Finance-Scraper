@@ -1,4 +1,4 @@
-# Naver-Finance-Scrapper
+# Naver-Finance-Scraper
 
 ## Test
 
