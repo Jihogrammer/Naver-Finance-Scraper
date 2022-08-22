@@ -1,0 +1,7 @@
+# Dependencies
+httpx
+beautifulsoup4
+
+# Development
+black
+flake8
