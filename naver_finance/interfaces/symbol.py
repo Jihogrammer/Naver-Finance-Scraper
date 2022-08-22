@@ -1,17 +1,17 @@
 from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import TYPE_CHECKING, List, Union
 
 if TYPE_CHECKING:
-    from naver_finance.models import Stock
+    from naver_finance.models import Symbol
 
 
-class CodeManager(metaclass=ABCMeta):
+class SymbolService(metaclass=ABCMeta):
     @abstractmethod
-    def code_to_name(self, code: str) -> Optional[str]:
+    def code_to_name(self, code: str) -> str:
         """종목코드를 받아 종목명을 반환합니다."""
 
     @abstractmethod
-    def name_to_code_list(self, name: str) -> List["Stock"]:
+    def name_to_code_list(self, name: str) -> List["Symbol"]:
         """종목명을 받아 검색 결과를 매핑해서 종목 리스트를 반환합니다."""
 
     @abstractmethod

@@ -1,6 +1,6 @@
 from typing import TypedDict
 
 
-class Stock(TypedDict):
+class Symbol(TypedDict):
     code: str
     name: str
